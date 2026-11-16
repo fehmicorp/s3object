@@ -9,16 +9,16 @@ ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /build
 RUN apk add --no-cache git ca-certificates
-COPY pkg/${VERSION}/go.mod ${VERSION}/go.sum ./
+COPY pkg/${VERSION}/go.* ./
 RUN go mod download
-COPY ${VERSION}/ ./
+COPY pkg/${VERSION} ./
 RUN CGO_ENABLED=0 \
     GOOS=${TARGETOS} \
     GOARCH=${TARGETARCH} \
     go build \
     -trimpath \
     -ldflags="-s -w" \
-    -o /build/app ./cmd/server
+    -o /build/app ./run/server.go
 
 # ==========================================
 # Runtime stage
