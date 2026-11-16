@@ -17,7 +17,6 @@ type Options struct {
 	Port        int
 	InitialSlug string
 	StoragePath string
-	StagingPath string
 }
 
 // Engine wraps the underlying HTTP server so external callers can start, mount, or shut it down.
