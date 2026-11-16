@@ -9,9 +9,12 @@ ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /build
 RUN apk add --no-cache git ca-certificates
-COPY pkg/${VERSION}/go.* ./
+COPY go.work ./
+COPY ${VERSION}/ ./${VERSION}
+COPY pkg/${VERSION} ./pkg/${VERSION}/
+
+WORKDIR /build/pkg/${VERSION}
 RUN go mod download
-COPY pkg/${VERSION} ./
 RUN CGO_ENABLED=0 \
     GOOS=${TARGETOS} \
     GOARCH=${TARGETARCH} \
