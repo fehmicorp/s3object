@@ -16,6 +16,15 @@ type Health struct {
 	Name, Version string
 }
 
+func (h *Health) HealthHandler(mux *http.ServeMux) {
+	live := ListingPath("/health/live")
+	ready := ListingPath("/health/ready")
+	health := ListingPath("/health")
+	mux.HandleFunc(live, h.Live)
+	mux.HandleFunc(ready, h.Ready)
+	mux.HandleFunc(health, h.Ready)
+}
+
 func (h *Health) Live(w http.ResponseWriter, r *http.Request) {
 	jsonOut(w, 200, map[string]any{"status": "alive", "app": h.Name, "version": h.Version})
 }

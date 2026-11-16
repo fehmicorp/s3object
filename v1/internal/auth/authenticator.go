@@ -7,6 +7,7 @@ import (
 )
 
 type Authenticator struct {
+	Type string
 	Keys map[string]string
 }
 
@@ -14,6 +15,7 @@ func NewAuthenticator() (*Authenticator, error) {
 	a := &Authenticator{Keys: map[string]string{}}
 	if raw := os.Getenv("S3_API_KEYS"); raw != "" {
 		var m map[string]string
+		a.Type = "API"
 		if err := json.Unmarshal([]byte(raw), &m); err != nil {
 			return nil, err
 		}
@@ -24,6 +26,7 @@ func NewAuthenticator() (*Authenticator, error) {
 		}
 	}
 	if k, s := os.Getenv("S3_ACCESS_HEADER"), os.Getenv("S3_ACCESS_SECRET_KEY"); k != "" && s != "" {
+		a.Type = "HEADER"
 		a.Keys[k] = s
 	}
 	if len(a.Keys) == 0 {

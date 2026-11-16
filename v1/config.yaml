@@ -7,7 +7,7 @@ server:
   host: 0.0.0.0
   port: 9000
   admin_port: 9001
-  slug: /s3
+  slug: /dist
   read_timeout: 300s
   write_timeout: 300s
   idle_timeout: 120s

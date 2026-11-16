@@ -37,21 +37,20 @@ func main() {
 	}
 	defer memory.Close()
 
-	authInst, e := auth.NewAuthenticator()
+	ath, e := auth.NewAuthenticator()
 	if e != nil {
 		log.Fatalf("credentials: %v", e)
 	}
 
-	// store, e := storage.NewStorage(c)
+	// store, e := storage.NewStorage(&c.Storage)
 	// if e != nil {
 	// 	log.Fatalf("storage: %v", e)
 	// }
 
-	// audit := &audit.Audit{DB: db, Enabled: c.Audit.Enabled}
-
-	health := &server.Health{DB: db, Cache: memory, Name: c.App.Name, Version: c.App.Version}
-
-	srv := server.NewServer(c, authInst, health)
+	adt := &server.Audit{DB: db, Enabled: c.Audit.Enabled}
+	mtc := &server.Metrics{Enabled: c.Metrics.Enabled, Path: c.Metrics.Path}
+	hth := &server.Health{DB: db, Cache: memory, Name: c.App.Name, Version: c.App.Version}
+	srv := server.NewServer(ctx, c, ath, adt, mtc, hth)
 
 	done := make(chan error, 1)
 	go func() { done <- srv.HTTP.ListenAndServe() }()
