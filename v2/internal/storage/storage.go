@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/fehmicorp/s3object/v1/types"
+	"github.com/fehmicorp/s3object/v2/types"
 )
 
 type Type struct {

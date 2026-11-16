@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/fehmicorp/s3object/v1/types"
+	"github.com/fehmicorp/s3object/v2/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

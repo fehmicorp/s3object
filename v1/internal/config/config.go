@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fehmicorp/s3object/v0/types"
-	"go.yaml.in/yaml/v2"
+	"github.com/goccy/go-yaml"
 )
 
-func LoadConfig(file string) (*types.Config, error) {
+func LoadConfig(file string) (*Config, error) {
 	c := defaultConfig()
 	if file != "" {
 		b, err := os.ReadFile(file)
@@ -26,15 +25,27 @@ func LoadConfig(file string) (*types.Config, error) {
 	return cfg, nil
 }
 
-func GetEnvConfig(c *types.Config) (*types.Config, error) {
+func GetEnvConfig(c *Config) (*Config, error) {
 	EnvStr("S3_ENV", &c.App.Environment)
 	EnvInt("S3_PORT", &c.Server.Port)
 	EnvStr("S3_SLUG", &c.Server.InitialSlug)
+	EnvStr("S3_PATH", &c.Storage.Path)
+	EnvStr("S3_HOST", &c.Server.Host)
+	EnvInt("S3_PORT", &c.Server.Port)
 	if c.Server.Host == "" {
 		c.Server.Host = "0.0.0.0"
 	}
 	if c.Server.Port == 0 {
 		c.Server.Port = 9000
+	}
+	if c.Storage.MaxUploadSize == 0 {
+		c.Storage.MaxUploadSize = 10 << 30
+	}
+	if c.Storage.Path == "" {
+		return nil, fmt.Errorf("storage.path are required")
+	}
+	if c.Storage.Driver != "" && c.Storage.Driver != "filesystem" {
+		return nil, fmt.Errorf("only filesystem storage driver is supported")
 	}
 	return c, nil
 }

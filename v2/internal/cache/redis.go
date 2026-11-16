@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/fehmicorp/s3object/v1/types"
+	"github.com/fehmicorp/s3object/v2/types"
 	"github.com/redis/go-redis/v9"
 )
 

@@ -9,49 +9,20 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fehmicorp/s3object/v1/internal/auth"
-	"github.com/fehmicorp/s3object/v1/internal/cache"
 	"github.com/fehmicorp/s3object/v1/internal/config"
-	"github.com/fehmicorp/s3object/v1/internal/db"
 	"github.com/fehmicorp/s3object/v1/internal/server"
 )
 
 func main() {
 	conf := flag.String("config", "config.yaml", "configuration YAML path")
 	flag.Parse()
-	c, e := config.LoadConfig(*conf)
+	cfg, e := config.LoadConfig(*conf)
 	if e != nil {
 		log.Fatalf("config: %v", e)
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	db, e := db.Connect(ctx, &c.Database)
-	if e != nil {
-		log.Fatalf("MongoDB: %v", e)
-	}
-	defer db.Close(ctx)
-
-	memory, e := cache.OpenCache(ctx, &c.Cache)
-	if e != nil {
-		log.Fatalf("Valkey: %v", e)
-	}
-	defer memory.Close()
-
-	ath, e := auth.NewAuthenticator()
-	if e != nil {
-		log.Fatalf("credentials: %v", e)
-	}
-
-	// store, e := storage.NewStorage(&c.Storage)
-	// if e != nil {
-	// 	log.Fatalf("storage: %v", e)
-	// }
-
-	adt := &server.Audit{DB: db, Enabled: c.Audit.Enabled}
-	mtc := &server.Metrics{Enabled: c.Metrics.Enabled, Path: c.Metrics.Path}
-	hth := &server.Health{DB: db, Cache: memory, Name: c.App.Name, Version: c.App.Version}
-	srv := server.NewServer(ctx, c, ath, adt, mtc, hth)
-
+	srv := server.CreateServer(ctx, cfg)
 	done := make(chan error, 1)
 	go func() { done <- srv.HTTP.ListenAndServe() }()
 	select {

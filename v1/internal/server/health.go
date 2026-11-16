@@ -1,54 +1,38 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
-	"time"
+	"strings"
 
-	"github.com/fehmicorp/s3object/v1/internal/cache"
-	"github.com/fehmicorp/s3object/v1/internal/db"
+	"github.com/fehmicorp/s3object/v1/internal/config"
 )
 
-type Health struct {
-	DB            *db.DB
-	Cache         *cache.Cache
-	Name, Version string
-}
-
-func (h *Health) HealthHandler(mux *http.ServeMux) {
-	live := ListingPath("/health/live")
-	ready := ListingPath("/health/ready")
-	health := ListingPath("/health")
-	mux.HandleFunc(live, h.Live)
-	mux.HandleFunc(ready, h.Ready)
-	mux.HandleFunc(health, h.Ready)
-}
-
-func (h *Health) Live(w http.ResponseWriter, r *http.Request) {
-	jsonOut(w, 200, map[string]any{"status": "alive", "app": h.Name, "version": h.Version})
-}
-
-func (h *Health) Ready(w http.ResponseWriter, r *http.Request) {
-	c, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-	defer cancel()
-
-	// Ping MongoDB to check database readiness
-	mongoOk := false
-	if h.DB != nil && h.DB.Client != nil {
-		if err := h.DB.Client.Ping(c, nil); err == nil {
-			mongoOk = true
+func healthHandler(mux *http.ServeMux, h *config.Config) {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodHead {
+			w.WriteHeader(http.StatusOK)
+			return
 		}
+		jsonOut(w, http.StatusOK, map[string]any{
+			"status":  "alive",
+			"app":     h.App.Name,
+			"version": h.App.Version,
+			"storage": h.Storage.Path,
+		})
 	}
+	mux.HandleFunc("GET /s3", handler)
+	mux.HandleFunc("HEAD /s3", handler)
+}
 
-	status := 200
-	state := "ready"
-	if !mongoOk {
-		status = 503
-		state = "not_ready"
+func ListingPath(path string) string {
+	if slug != "" && !strings.HasPrefix(slug, "/") {
+		slug = "/" + slug
 	}
-
-	jsonOut(w, status, map[string]any{"status": state, "mongodb": mongoOk})
+	if path == "/" {
+		return slug + "/{$}"
+	}
+	return slug + path
 }
 
 func jsonOut(w http.ResponseWriter, status int, v any) {

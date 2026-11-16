@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/fehmicorp/s3object/v1/internal/cache"
-	"github.com/fehmicorp/s3object/v1/internal/db"
-	"github.com/fehmicorp/s3object/v1/internal/storage"
+	"github.com/fehmicorp/s3object/v2/internal/cache"
+	"github.com/fehmicorp/s3object/v2/internal/db"
+	"github.com/fehmicorp/s3object/v2/internal/storage"
 )
 
 type Buckets struct {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fehmicorp/s3object/v1/internal/db"
+	"github.com/fehmicorp/s3object/v2/internal/db"
 )
 
 type Audit struct {
