@@ -11,29 +11,20 @@ A lightweight, self-hosted S3-compatible object and asset storage API built in G
 ### 2. Configuration (`config.yaml`)
 ```yaml
 app:
-  name: "fehmi-s3"
-  version: "0.1.0"
-  environment: "development"
+  name: fehmi-s3
+  version: 1.0.0
+  environment: development
 
 server:
-  host: "0.0.0.0"
+  host: 0.0.0.0
   port: 9000
-  initial_slug: "/dist"
-  read_timeout: 300s
-  write_timeout: 300s
-  idle_timeout: 120s
-  max_header_bytes: 1048576
+  slug: /dist
 
 storage:
-  driver: "filesystem"
-  path: "./data/persistent"
-  staging_path: "./data/staging"
-  max_upload_size: 10737418240 # 10 GB
-  chunk_size: 8388608          # 8 MB
-
-security:
-  checksum_algorithm: "sha256"
-  presigned_url_expiry: 400s
+  driver: filesystem
+  path: /data
+  max_upload_size: 10737418240
+  chunk_size: 16777216
 ```
 
 ### 3. Run the Server
