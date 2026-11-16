@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 \
     go build \
     -trimpath \
     -ldflags="-s -w" \
-    -o /build/blobstorage .
+    -o /build/app .
 
 # ==========================================
 # Runtime stage
@@ -28,13 +28,13 @@ ARG VERSION
 RUN apk add --no-cache ca-certificates tzdata \
     && addgroup -S blobstorage \
     && adduser -S -G blobstorage blobstorage \
-    && mkdir -p /app /app/configs /data/hot /data/persistent /data/staging \
+    && mkdir -p /app /app/configs /data \
     && chown -R blobstorage:blobstorage /app /data
 WORKDIR /app
-COPY --from=builder --chown=blobstorage:blobstorage /build/blobstorage /app/blobstorage
+COPY --from=builder --chown=blobstorage:blobstorage /build/app /app/blobstorage
 COPY --chown=blobstorage:blobstorage configs/${VERSION}.yaml /app/config.yaml
 USER blobstorage
-EXPOSE 9000 9001
-VOLUME ["/data/hot", "/data/persistent", "/data/staging"]
+EXPOSE 9000
+VOLUME ["/data"]
 ENTRYPOINT ["/app/blobstorage"]
 CMD ["-config", "/app/config.yaml"]
