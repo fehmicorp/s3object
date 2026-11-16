@@ -31,13 +31,15 @@ ARG VERSION
 RUN apk add --no-cache ca-certificates tzdata \
     && addgroup -S blobstorage \
     && adduser -S -G blobstorage blobstorage \
-    && mkdir -p /app /app/configs /data \
+    && mkdir -p /app /data \
     && chown -R blobstorage:blobstorage /app /data
 WORKDIR /app
 COPY --from=builder --chown=blobstorage:blobstorage /build/app /app/blobstorage
-COPY --chown=blobstorage:blobstorage configs/${VERSION}.yaml /app/config.yaml
+ENV S3_HOST=0.0.0.0 \
+    S3_PORT=9000 \
+    S3_SLUG=/dist \
+    S3_STORAGE_PATH=/data
 USER blobstorage
 EXPOSE 9000
 VOLUME ["/data"]
 ENTRYPOINT ["/app/blobstorage"]
-CMD ["-config", "/app/config.yaml"]

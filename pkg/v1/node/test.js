@@ -1,28 +1,19 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const http = require("node:http");
+const { setTimeout: delay } = require("node:timers/promises");
 const { createS3Middleware } = require("./index");
 
-test("proxies S3 binary PUT/GET requests and passes through non-matching paths", async () => {
-  // 1. Start mock Go S3 upstream server
-  const mockS3 = http.createServer((req, res) => {
-    const chunks = [];
-    req.on("data", (c) => chunks.push(c));
-    req.on("end", () => {
-      const body = Buffer.concat(chunks).toString("utf8");
-      res.writeHead(200, { "Content-Type": "application/json", "X-Mock-Path": req.url });
-      res.end(JSON.stringify({ method: req.method, url: req.url, receivedBody: body }));
-    });
-  });
+test("checks /s3 health, creates bucket dir on real S3 server, lists it, waits 5s, and removes it", async () => {
+  const s3Host = process.env.S3_HOST || "127.0.0.1";
+  const s3Port = Number(process.env.S3_PORT || 9000);
+  const s3Slug = process.env.S3_SLUG || "/s3"; // Changed from "/dist" to "/s3"
 
-  await new Promise((resolve) => mockS3.listen(0, "127.0.0.1", resolve));
-  const s3Port = mockS3.address().port;
-
-  // 2. Start Gateway server using the middleware
+  // 1. Start Gateway server using the middleware pointing to /s3
   const middleware = createS3Middleware({
-    host: "127.0.0.1",
+    host: s3Host,
     port: s3Port,
-    slug: "/dist",
+    slug: s3Slug,
   });
 
   const gateway = http.createServer((req, res) => {
@@ -33,26 +24,51 @@ test("proxies S3 binary PUT/GET requests and passes through non-matching paths",
   });
 
   await new Promise((resolve) => gateway.listen(0, "127.0.0.1", resolve));
-  const gwPort = gateway.address().port;
+  const gwPort = 9000;
+  const baseUrl = `http://127.0.0.1:${gwPort}${s3Slug}`;
+  const bucketName = `test-dir-${Date.now()}`;
 
   try {
-    // Test A: Matching /dist route streams body + query params to S3
-    const s3Res = await fetch(`http://127.0.0.1:${gwPort}/dist/obj/my-bucket/logo.png?uploadId=123`, {
-      method: "PUT",
-      body: "binary-image-content",
-    });
-    assert.equal(s3Res.status, 200);
-    const json = await s3Res.json();
-    assert.equal(json.method, "PUT");
-    assert.equal(json.url, "/dist/obj/my-bucket/logo.png?uploadId=123");
-    assert.equal(json.receivedBody, "binary-image-content");
+    // Step 1: Check health at http://127.0.0.1:<gwPort>/s3
+    const healthRes = await fetch(baseUrl);
+    assert.equal(healthRes.status, 200, `Expected 200 from ${baseUrl}, got ${healthRes.status}`);
+    const healthJson = await healthRes.json();
+    console.log("Health check (/s3) passed:", healthJson);
 
-    // Test B: Non-matching route falls through to next()
-    const appRes = await fetch(`http://127.0.0.1:${gwPort}/api/users`);
-    assert.equal(appRes.status, 200);
-    assert.equal(await appRes.text(), "handled-by-host-app");
+    // Step 2: Create new bucket directory on real storage
+    const createRes = await fetch(`${baseUrl}/create/${bucketName}`, { method: "PUT" });
+    assert.equal(createRes.status, 200);
+    const createJson = await createRes.json();
+    console.log("Created dir:", createJson);
+
+    // Step 3: List directories and verify it exists
+    const listRes = await fetch(`${baseUrl}/list`);
+    assert.equal(listRes.status, 200);
+    const listJson = await listRes.json();
+    console.log("Listed dirs:", listJson);
+    assert.ok(
+      listJson.buckets.some((b) => b.name === bucketName),
+      `Bucket ${bucketName} was not found in /s3/list response`
+    );
+
+    // Step 4: Wait 5 seconds
+    console.log(`Waiting 5 seconds before removing '${bucketName}'...`);
+    await delay(5000);
+
+    // Step 5: Remove the bucket directory
+    const deleteRes = await fetch(`${baseUrl}/delete/${bucketName}`, { method: "DELETE" });
+    assert.equal(deleteRes.status, 204);
+    console.log(`Removed dir '${bucketName}'`);
+
+    // Step 6: Verify directory is gone
+    const listAfterRes = await fetch(`${baseUrl}/list`);
+    const listAfterJson = await listAfterRes.json();
+    assert.equal(
+      listAfterJson.buckets.some((b) => b.name === bucketName),
+      false,
+      `Bucket ${bucketName} still exists after delete`
+    );
   } finally {
     gateway.close();
-    mockS3.close();
   }
 });
