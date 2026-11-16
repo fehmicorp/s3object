@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 \
     go build \
     -trimpath \
     -ldflags="-s -w" \
-    -o /build/app .
+    -o /build/app ./cmd/server
 
 # ==========================================
 # Runtime stage

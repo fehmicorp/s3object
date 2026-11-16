@@ -30,7 +30,6 @@ func GetEnvConfig(c *Config) (*Config, error) {
 	EnvInt("S3_PORT", &c.Server.Port)
 	EnvStr("S3_SLUG", &c.Server.InitialSlug)
 	EnvStr("S3_PATH", &c.Storage.Path)
-	EnvStr("S3_HOST", &c.Server.Host)
 	EnvInt("S3_PORT", &c.Server.Port)
 	if c.Server.Host == "" {
 		c.Server.Host = "0.0.0.0"

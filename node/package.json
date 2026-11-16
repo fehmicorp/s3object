@@ -1,0 +1,24 @@
+{
+  "name": "@fehmicorp/s3-proxy",
+  "version": "1.0.0",
+  "description": "Streaming reverse-proxy middleware for Fehmi S3 Object Storage",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test.js"
+  },
+  "keywords": [
+    "s3",
+    "proxy",
+    "middleware",
+    "streaming",
+    "fehmicorp"
+  ],
+  "author": "Sameer Shaikh",
+  "license": "MIT"
+}
