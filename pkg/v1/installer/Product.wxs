@@ -1,0 +1,50 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package
+    Name="Fehmi S3 Server"
+    Manufacturer="Fehmi Corporation"
+    Version="1.0.0"
+    UpgradeCode="8B14D6E2-9A31-4C72-AF51-6B2D9E7C1048"
+    Scope="perMachine"
+    InstallerVersion="500">
+
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of Fehmi S3 is already installed."/>
+
+    <MediaTemplate EmbedCab="yes"/>
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Fehmi\S3"/>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="APPLICATIONPROGRAMSFOLDER" Name="Fehmi S3"/>
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="Fehmi S3 Server" Level="1">
+
+      <Component Id="ServerComponent"
+                 Directory="INSTALLFOLDER"
+                 Guid="*">
+
+        <File
+          Id="ServerExecutable"
+          Source="Payload\server.exe"
+          Name="server.exe"
+          KeyPath="yes">
+          <Shortcut
+            Id="StartMenuShortcut"
+            Directory="APPLICATIONPROGRAMSFOLDER"
+            Name="Fehmi S3 Server"
+            WorkingDirectory="INSTALLFOLDER"
+            Advertise="no"
+            Target="[INSTALLFOLDER]server.exe"/>
+
+        </File>
+      </Component>
+    </Feature>
+  </Package>
+</Wix>

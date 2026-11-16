@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FehmiCorp S3 Object Storage — Operator &amp; API Guide</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #2563eb;
+      --code-bg: #1e293b;
+      --code-text: #f8fafc;
+      --accent-bg: #eff6ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    aside {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 2rem 1.25rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .version {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+      display: block;
+    }
+
+    nav ul { list-style: none; }
+    nav li { margin-bottom: 0.5rem; }
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: block;
+      padding: 0.4rem 0.65rem;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+    nav a:hover { background: var(--accent-bg); color: var(--primary); }
+
+    main {
+      margin-left: 260px;
+      padding: 2.5rem 3.5rem;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--muted); font-size: 1.05rem; }
+
+    section { margin-bottom: 2.75rem; }
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+    }
+    p { margin-bottom: 0.85rem; color: #334155; }
+    ul { margin-left: 1.5rem; margin-bottom: 1rem; color: #334155; }
+    li { margin-bottom: 0.4rem; }
+
+    .code-wrapper { position: relative; margin: 0.85rem 0 1.25rem; }
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.25); }
+    code.inline {
+      background: #e2e8f0;
+      color: #0f172a;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 0.85em;
+    }
+
+    .callout {
+      background: var(--accent-bg);
+      border-left: 4px solid var(--primary);
+      padding: 1rem 1.25rem;
+      border-radius: 0 6px 6px 0;
+      margin: 1rem 0;
+      font-size: 0.925rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      font-size: 0.9rem;
+    }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f1f5f9; font-weight: 600; }
+
+    .badge { display: inline-block; padding: 0.15rem 0.45rem; font-size: 0.75rem; font-weight: 700; border-radius: 4px; font-family: monospace; }
+    .get { background: #dcfce7; color: #166534; }
+    .put { background: #dbeafe; color: #1e40af; }
+    .del { background: #fee2e2; color: #991b1b; }
+    .post { background: #fef3c7; color: #92400e; }
+    .head { background: #f3e8ff; color: #6b21a8; }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <aside>
+    <div class="brand">FehmiCorp S3</div>
+    <span class="version">Path: C:\Program Files\Fehmi\S3\</span>
+    <nav>
+      <ul>
+        <li><a href="#overview">1. Overview</a></li>
+        <li><a href="#execution">2. Running server.exe</a></li>
+        <li><a href="#endpoints">3. Server Route Reference</a></li>
+        <li><a href="#multipart">4. Multipart Uploads</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <header>
+      <h1>FehmiCorp S3 Object Storage</h1>
+      <p class="subtitle">Local Executable &amp; Endpoint Configuration Reference</p>
+    </header>
+
+    <section id="overview">
+      <h2>1. Overview</h2>
+      <p>
+        The local binary <code class="inline">server.exe</code> located at <code class="inline">C:\Program Files\Fehmi\S3\server.exe</code> runs an optimized HTTP server exposing S3-compatible endpoints and asset indexing utilities.
+      </p>
+      <div class="callout">
+        <strong>Installation Directory:</strong> <code class="inline">C:\Program Files\Fehmi\S3\</code>
+      </div>
+    </section>
+
+    <section id="execution">
+      <h2>2. Running server.exe</h2>
+      <p>Open PowerShell as Administrator to start the local S3 instance:</p>
+      <div class="code-wrapper">
+        <pre>&amp; "C:\Program Files\Fehmi\S3\server.exe" server `
+  --address "127.0.0.1:9000" `
+  --data-dir "D:\Fehmi\S3\storage"</pre>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+    </section>
+
+    <section id="endpoints">
+      <h2>3. Server Route Reference</h2>
+      <p>The Go HTTP multiplexer registers the following operation paths:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>HTTP Method</th>
+            <th>Route Path Pattern</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge post">POST</span></td>
+            <td><code class="inline">/sign</code></td>
+            <td>Generate presigned upload/download URLs</td>
+          </tr>
+          <tr>
+            <td><span class="badge get">GET</span></td>
+            <td><code class="inline">/find</code></td>
+            <td>Search indexed assets and metadata</td>
+          </tr>
+          <tr>
+            <td><span class="badge get">GET</span></td>
+            <td><code class="inline">/list</code></td>
+            <td>List all created buckets</td>
+          </tr>
+          <tr>
+            <td><span class="badge put">PUT</span></td>
+            <td><code class="inline">/create/{bucket}</code></td>
+            <td>Create a new storage bucket</td>
+          </tr>
+          <tr>
+            <td><span class="badge head">HEAD</span></td>
+            <td><code class="inline">/fetch/{bucket}</code></td>
+            <td>Check bucket existence and headers</td>
+          </tr>
+          <tr>
+            <td><span class="badge del">DELETE</span></td>
+            <td><code class="inline">/delete/{bucket}</code></td>
+            <td>Delete an empty bucket</td>
+          </tr>
+          <tr>
+            <td><span class="badge get">GET</span></td>
+            <td><code class="inline">/objs/{bucket}</code></td>
+            <td>List objects inside a bucket</td>
+          </tr>
+          <tr>
+            <td><span class="badge put">PUT</span></td>
+            <td><code class="inline">/obj/{bucket}/{key...}</code></td>
+            <td>Upload or overwrite an object</td>
+          </tr>
+          <tr>
+            <td><span class="badge get">GET</span></td>
+            <td><code class="inline">/obj/{bucket}/{key...}</code></td>
+            <td>Download object contents</td>
+          </tr>
+          <tr>
+            <td><span class="badge head">HEAD</span></td>
+            <td><code class="inline">/obj/{bucket}/{key...}</code></td>
+            <td>Retrieve object metadata without body</td>
+          </tr>
+          <tr>
+            <td><span class="badge del">DELETE</span></td>
+            <td><code class="inline">/obj/{bucket}/{key...}</code></td>
+            <td>Delete a specific object</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="multipart">
+      <h2>4. Multipart Upload Routes</h2>
+      <p>Optimized for large files and desktop/mobile agent synchronization:</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>HTTP Method</th>
+            <th>Route Path Pattern</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge post">POST</span></td>
+            <td><code class="inline">/begin/{bucket}/{key...}</code></td>
+            <td>Start the uploading content</td>
+          </tr>
+          <tr>
+            <td><span class="badge put">PUT</span></td>
+            <td><code class="inline">/part/{bucket}/{key...}</code></td>
+            <td>Uploading the content into chunks</td>
+          </tr>
+          <tr>
+            <td><span class="badge post">POST</span></td>
+            <td><code class="inline">/done/{bucket}/{key...}</code></td>
+            <td>After complete the uploading verify the chunks to consolidate the file</td>
+          </tr>
+          <tr>
+            <td><span class="badge del">DELETE</span></td>
+            <td><code class="inline">/end/{bucket}/{key...}</code></td>
+            <td>Abort the uploading and delete the uploaded chunks</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      FehmiCorp S3 &bull; C:\Program Files\Fehmi\S3\server.exe &bull; Local Operator Guide
+    </footer>
+  </main>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.previousElementSibling;
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        const original = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = original, 1500);
+      });
+    }
+  </script>
+</body>
+</html>
