@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/fehmicorp/s3object/v1/types"
+	"github.com/fehmicorp/s3object/v0/types"
 	"go.yaml.in/yaml/v2"
 )
 
