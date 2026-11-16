@@ -10,6 +10,7 @@ import (
 type Buckets struct {
 	Name      string
 	Owner     string
+	isPrivate bool
 	CreatedAt time.Time
 }
 
