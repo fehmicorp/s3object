@@ -23,7 +23,7 @@ func (h *Health) HttpMethods(w http.ResponseWriter, r *http.Request, slug string
 		}
 	case http.MethodPut:
 		if pr.Bkt == "" && pr.Prms.Keys["bucket"] != "" {
-			return Func(pr.Prms.CreateBucket)
+			// return Func(pr.Prms.CreateBucket)
 		}
 		if pr.Bkt != "" && pr.Obj != "" && pr.Prms.Keys["object"] != "" {
 			return Func(pr.Prms.CreateObject)
