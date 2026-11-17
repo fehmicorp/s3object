@@ -1,6 +1,4 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
-
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <Package
@@ -16,6 +14,10 @@
 
     <MediaTemplate EmbedCab="yes"/>
 
+    <!-- Define Application Icon for Add/Remove Programs -->
+    <Icon Id="AppIcon" SourceFile="app.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="Fehmi\S3"/>
     </StandardDirectory>
@@ -24,12 +26,18 @@
       <Directory Id="APPLICATIONPROGRAMSFOLDER" Name="Fehmi S3"/>
     </StandardDirectory>
 
+    <!-- Component for Start Menu Folder Cleanup -->
+    <DirectoryRef Id="APPLICATIONPROGRAMSFOLDER">
+      <Component Id="ProgramMenuDir" Guid="*">
+        <RemoveFolder Id="CleanUpShortCut" Directory="APPLICATIONPROGRAMSFOLDER" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\FehmiCorp\S3" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
     <Feature Id="MainFeature" Title="Fehmi S3 Server" Level="1">
-
-      <Component Id="ServerComponent"
-                 Directory="INSTALLFOLDER"
-                 Guid="*">
-
+      
+      <!-- Component 1: Server Executable -->
+      <Component Id="ServerComponent" Directory="INSTALLFOLDER" Guid="*">
         <File
           Id="ServerExecutable"
           Source="Payload\server.exe"
@@ -40,11 +48,27 @@
             Directory="APPLICATIONPROGRAMSFOLDER"
             Name="Fehmi S3 Server"
             WorkingDirectory="INSTALLFOLDER"
-            Advertise="no"
-            Target="[INSTALLFOLDER]server.exe"/>
-
+            Advertise="no"/>
         </File>
       </Component>
+
+      <!-- Component 2: Local Operator Guide (index.html) -->
+      <Component Id="DocsComponent" Directory="INSTALLFOLDER" Guid="*">
+        <File
+          Id="DocsIndexHtml"
+          Source="Payload\index.html"
+          Name="index.html"
+          KeyPath="yes">
+          <Shortcut
+            Id="DocsStartMenuShortcut"
+            Directory="APPLICATIONPROGRAMSFOLDER"
+            Name="Fehmi S3 Operator Guide"
+            WorkingDirectory="INSTALLFOLDER"
+            Advertise="no"/>
+        </File>
+      </Component>
+
+      <ComponentRef Id="ProgramMenuDir"/>
     </Feature>
   </Package>
 </Wix>
